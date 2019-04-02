@@ -1,0 +1,133 @@
+# This is Windows Only right now
+if (($PSVersionTable.PSEdition -eq 'Desktop') -or
+    (($PSVersionTable.PSEdition -eq 'Core') -and $IsWindows)) {
+  $fso = New-Object -ComObject Scripting.FileSystemObject
+
+  $env:DEVKIT_BASEDIR = (Get-ItemProperty -Path "HKLM:\Software\Puppet Labs\DevelopmentKit").RememberedInstallDir64
+  # Windows API GetShortPathName requires inline C#, so use COM instead
+  $env:DEVKIT_BASEDIR = $fso.GetFolder($env:DEVKIT_BASEDIR).ShortPath
+  $env:RUBY_DIR       = "$($env:DEVKIT_BASEDIR)\private\ruby\2.4.4"
+  $env:SSL_CERT_FILE  = "$($env:DEVKIT_BASEDIR)\ssl\cert.pem"
+  $env:SSL_CERT_DIR   = "$($env:DEVKIT_BASEDIR)\ssl\certs"
+  # Disable the spinner
+  $env:PDK_FRONTEND   = 'noninteractive'
+
+  function Invoke-PDK($PDKArgs) {
+    if ($DebugPreference -ne 'SilentlyContinue') { $PDKArgs += @('--debug') }
+    Write-Verbose "Using PDK comamand line $($PDKArgs -join ' ')"
+
+    if ($env:ConEmuANSI -eq 'ON') {
+      &$env:RUBY_DIR\bin\ruby -S -- $env:RUBY_DIR\bin\pdk $PDKArgs
+    } else {
+      &$env:DEVKIT_BASEDIR\private\tools\bin\ansicon.exe $env:RUBY_DIR\bin\ruby -S -- $env:RUBY_DIR\bin\pdk $PDKArgs
+    }
+  }
+
+} else {
+  Throw 'The PDK module is not supported on this platform yet'
+  return
+}
+
+<%
+$pdkToPowerShell = @{
+  'convert' = 'ConvertTo'
+  'new' = 'New'
+  'test' = 'Test'
+  'update' = 'Update'
+  'validate' = 'Validate'
+}
+
+$json.subcommands | ? { $pdkToPowerShell.Keys -contains $_.Name } | ForEach-Object {
+#foreach($command in $json.subcommands) {
+
+  $PDKVerb = $_.Name
+  $FunctionVerb = $pdkToPowerShell[$PDKVerb]
+
+  $HasSubCommands = $_.subcommands.Length -gt 0
+  if ($_.subcommands.Length -eq 0) {
+    $subCommands = $_
+  } else {
+    $subCommands = $_ | Select -expand subcommands | ? { $_.Name -ne 'help' }
+  }
+
+  $subCommands | ForEach-Object {
+   $FunctionName = $FunctionVerb + '-PDK' + $_.PSFunctionName
+
+    $optionsHash = @{}
+    $_.options | Each {
+      $hash = @{
+        'pdkname' = $_.long
+        'desc' = $_.desc;
+        'type' = 'String';
+        'reserved' = $false;
+        'position' = -1;
+      }
+      if ($_.argument -eq 'forbidden') { $hash['type'] = 'Switch' }
+      if ($_.long -eq 'verbose') { $hash['type'] = 'Verbose'; $hash['reserved'] = $true }
+
+      $optionsHash[$_.PSParamName] = $hash
+    }
+
+    $UsageMatches = ([Regex]'(?:<([^>]+)>)').Matches($_.usage)
+    $position = 0
+    $UsageMatches | ForEach-Object {
+      $pdkName = $_.Groups[1].value.ToString()
+      $PSParamName = (Get-Culture).TextInfo.ToTitleCase($pdkName).replace('-','').replace('_','')
+
+      $optionsHash[$PSParamName] = @{ 'type' = 'String'; 'desc' = "The specified $pdkName"; 'reserved' = $false; 'position' = $position; }
+      $position++
+    }
+  -%>
+<#
+.DESCRIPTION
+<%= $_.summary %>
+<% $optionsHash.GetEnumerator() | Where-Object { $_.Value['reserved'] -eq $false } | Each { -%>
+
+.PARAMETER <%= $_.Key %>
+<%= $_.Value.desc %>
+<% } -%>
+#>
+Function <%= $FunctionName %>
+{
+  [CmdletBinding()]
+  param(
+<%
+
+%><%= ($optionsHash.GetEnumerator() | Where-Object { $_.Value['reserved'] -eq $false } | ForEach-Object {
+    $output = "    [$($_.value['type'])] `$$($_.key)"
+    if ($_.Value['position'] -ge 0) { $output = "    [Parameter(Position = $($_.Value['position']))]`n" + $output }
+
+    Write-Output $output
+  }) -Join ",`n`n" %>
+  )
+
+<%  if ($HasSubCommands) { -%>
+  $args = @('<%= $PDKVerb %>', '<%= $_.name%>')
+<%  } else { -%>
+  $args = @('<%= $PDKVerb %>')
+<%  } -%>
+<% $optionsHash.GetEnumerator() | Where-Object { $_.Value['position'] -eq -1 } | ForEach-Object {
+  $PSParamName = $_.Key
+  $optionDetails = $_.Value
+
+  if ($optionDetails['type'] -eq 'Switch') { -%>
+  if ($<%= $PSParamName -%>) { $args += @('--<%= $optionDetails['pdkname'] %>') }
+<% } elseif ($optionDetails['type'] -eq 'Verbose') { -%>
+  if ($VerbosePreference -eq 'Continue') { $args += '--<%= $optionDetails['pdkname'] %>' }
+<% } else { -%>
+  if (![string]::IsNullOrEmpty($<%= $PSParamName -%>)) { $args += @('--<%= $optionDetails['pdkname'] %>', $<%= $PSParamName -%> )}
+<% }
+}
+
+$optionsHash.GetEnumerator() | Where-Object { $_.Value['position'] -ge 0 } | ForEach-Object {
+  $PSParamName = $_.Key
+  $optionDetails = $_.Value
+%>  if (![string]::IsNullOrEmpty($<%= $PSParamName -%>)) { $args += $<%= $PSParamName -%> }
+<% } -%>
+
+  Invoke-PDK -PDKArgs $args
+}
+Export-ModuleMember -Function <%= $FunctionName %>
+
+<% }
+ } %>

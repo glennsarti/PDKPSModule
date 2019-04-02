@@ -1,0 +1,3 @@
+PDK-1334
+
+https://tickets.puppetlabs.com/browse/PDK-1319

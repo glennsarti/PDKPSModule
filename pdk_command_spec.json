@@ -1,0 +1,715 @@
+{
+  "name": "pdk",
+  "aliases": [
+
+  ],
+  "description": "The shortest path to better modules.",
+  "hidden": null,
+  "summary": "Puppet Development Kit",
+  "usage": "Puppet Development Kit",
+  "options": [
+    {
+      "short": null,
+      "long": "version",
+      "desc": "Show version of pdk.",
+      "argument": "forbidden",
+      "multiple": false,
+      "hidden": false,
+      "default": null
+    },
+    {
+      "short": "h",
+      "long": "help",
+      "desc": "Show help for this command.",
+      "argument": "forbidden",
+      "multiple": false,
+      "hidden": false,
+      "default": null
+    },
+    {
+      "short": "f",
+      "long": "format",
+      "desc": "Specify desired output format. Valid formats are 'junit', 'text'. You may also specify a file to which the formatted output is sent, for example: '--format=junit:report.xml'. This option may be specified multiple times if each option specifies a distinct target file.",
+      "argument": "required",
+      "multiple": true,
+      "hidden": false,
+      "default": null
+    },
+    {
+      "short": "d",
+      "long": "debug",
+      "desc": "Enable debug output.",
+      "argument": "forbidden",
+      "multiple": false,
+      "hidden": false,
+      "default": null
+    },
+    {
+      "short": null,
+      "long": "answer-file",
+      "desc": "Path to an answer file.",
+      "argument": "required",
+      "multiple": false,
+      "hidden": true,
+      "default": null
+    }
+  ],
+  "subcommands": [
+    {
+      "name": "bundle",
+      "aliases": [
+
+      ],
+      "description": "[experimental] For advanced users, pdk bundle runs arbitrary commands in the bundler environment that pdk manages.\nCareless use of this command can lead to errors that pdk can't help recover from.\n\nNote that for PowerShell the '--' needs to be escaped using a backtick: '`--' to avoid it being parsed by the shell.\n",
+      "hidden": null,
+      "summary": "(Experimental) Command pass-through to bundler",
+      "usage": "(Experimental) Command pass-through to bundler",
+      "options": [
+
+      ],
+      "subcommands": [
+
+      ]
+    },
+    {
+      "name": "build",
+      "aliases": [
+
+      ],
+      "description": null,
+      "hidden": null,
+      "summary": "Builds a package from the module that can be published to the Puppet Forge.",
+      "usage": "Builds a package from the module that can be published to the Puppet Forge.",
+      "options": [
+        {
+          "short": null,
+          "long": "target-dir",
+          "desc": "The target directory where you want PDK to write the package.",
+          "argument": "required",
+          "multiple": false,
+          "hidden": false,
+          "default": "/home/tsharpe/code/puppetlabs/pdk/pkg"
+        },
+        {
+          "short": null,
+          "long": "force",
+          "desc": "Skips the prompts and builds the module package.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        }
+      ],
+      "subcommands": [
+
+      ]
+    },
+    {
+      "name": "convert",
+      "aliases": [
+
+      ],
+      "description": null,
+      "hidden": null,
+      "summary": "Convert an existing module to be compatible with the PDK.",
+      "usage": "Convert an existing module to be compatible with the PDK.",
+      "options": [
+        {
+          "short": null,
+          "long": "template-url",
+          "desc": "Specifies the URL to the template to use when creating new modules or classes. (default: https://github.com/puppetlabs/pdk-templates)",
+          "argument": "required",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "template-ref",
+          "desc": "Specifies the template git branch or tag to use when creating new modules or classes.",
+          "argument": "required",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "skip-interview",
+          "desc": "When specified, skips interactive querying of metadata.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "full-interview",
+          "desc": "When specified, interactive querying of metadata will include all optional questions.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "noop",
+          "desc": "Do not convert the module, just output what would be done.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "force",
+          "desc": "Convert the module automatically, with no prompts.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        }
+      ],
+      "subcommands": [
+
+      ]
+    },
+    {
+      "name": "new",
+      "aliases": [
+
+      ],
+      "description": "Creates a new <thing> using relevant options.",
+      "hidden": null,
+      "summary": "create a new module, etc.",
+      "usage": "create a new module, etc.",
+      "options": [
+
+      ],
+      "subcommands": [
+        {
+          "name": "help",
+          "aliases": [
+
+          ],
+          "description": "Show help for the given command, or show general help. When no command is\ngiven, a list of available commands is displayed, as well as a list of global\ncommand-line options. When a command is given, a command description, as well\nas command-specific command-line options, are shown.\n",
+          "hidden": null,
+          "summary": "show help",
+          "usage": "show help",
+          "options": [
+            {
+              "short": "v",
+              "long": "verbose",
+              "desc": "show more detailed help",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            }
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "class",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "Create a new class named <class_name> using given options",
+          "usage": "Create a new class named <class_name> using given options",
+          "options": [
+
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "defined_type",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "Create a new defined type named <name> using given options",
+          "usage": "Create a new defined type named <name> using given options",
+          "options": [
+
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "module",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "Create a new module named [module_name] using given options",
+          "usage": "Create a new module named [module_name] using given options",
+          "options": [
+            {
+              "short": null,
+              "long": "template-url",
+              "desc": "Specifies the URL to the template to use when creating new modules or classes. (default: https://github.com/puppetlabs/pdk-templates)",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "template-ref",
+              "desc": "Specifies the template git branch or tag to use when creating new modules or classes.",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "skip-interview",
+              "desc": "When specified, skips interactive querying of metadata.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "full-interview",
+              "desc": "When specified, interactive querying of metadata will include all optional questions.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "license",
+              "desc": "Specifies the license this module is written under. This should be a identifier from https://spdx.org/licenses/. Common values are 'Apache-2.0', 'MIT', or 'proprietary'.",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "skip-bundle-install",
+              "desc": "Do not automatically run `bundle install` after creating the module.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": true,
+              "default": null
+            }
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "provider",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "[experimental] Create a new ruby provider named <name> using given options",
+          "usage": "[experimental] Create a new ruby provider named <name> using given options",
+          "options": [
+
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "task",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "Create a new task named <name> using given options",
+          "usage": "Create a new task named <name> using given options",
+          "options": [
+            {
+              "short": null,
+              "long": "description",
+              "desc": "A short description of the purpose of the task",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            }
+          ],
+          "subcommands": [
+
+          ]
+        }
+      ]
+    },
+    {
+      "name": "test",
+      "aliases": [
+
+      ],
+      "description": null,
+      "hidden": null,
+      "summary": "Run tests.",
+      "usage": "Run tests.",
+      "options": [
+
+      ],
+      "subcommands": [
+        {
+          "name": "help",
+          "aliases": [
+
+          ],
+          "description": "Show help for the given command, or show general help. When no command is\ngiven, a list of available commands is displayed, as well as a list of global\ncommand-line options. When a command is given, a command description, as well\nas command-specific command-line options, are shown.\n",
+          "hidden": null,
+          "summary": "show help",
+          "usage": "show help",
+          "options": [
+            {
+              "short": "v",
+              "long": "verbose",
+              "desc": "show more detailed help",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            }
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "unit",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "Run unit tests.",
+          "usage": "Run unit tests.",
+          "options": [
+            {
+              "short": null,
+              "long": "puppet-version",
+              "desc": "Puppet version to run tests or validations against.",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "pe-version",
+              "desc": "Puppet Enterprise version to run tests or validations against.",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "puppet-dev",
+              "desc": "When specified, PDK will validate or test against the current Puppet source from github.com. To use this option, you must have network access to https://github.com.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "list",
+              "desc": "List all available unit test files.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "parallel",
+              "desc": "Run unit tests in parallel.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": "v",
+              "long": "verbose",
+              "desc": "More verbose --list output. Displays a list of examples in each unit test file.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": "c",
+              "long": "clean-fixtures",
+              "desc": "Clean up downloaded fixtures after the test run.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "tests",
+              "desc": "Specify a comma-separated list of unit test files to run.",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": ""
+            }
+          ],
+          "subcommands": [
+
+          ]
+        }
+      ]
+    },
+    {
+      "name": "update",
+      "aliases": [
+
+      ],
+      "description": null,
+      "hidden": null,
+      "summary": "Update a module that has been created by or converted for use by PDK.",
+      "usage": "Update a module that has been created by or converted for use by PDK.",
+      "options": [
+        {
+          "short": null,
+          "long": "noop",
+          "desc": "Do not update the module, just output what would be done.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "force",
+          "desc": "Update the module automatically, with no prompts.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "template-ref",
+          "desc": "Specifies the template git branch or tag to use when creating new modules or classes.",
+          "argument": "required",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        }
+      ],
+      "subcommands": [
+
+      ]
+    },
+    {
+      "name": "validate",
+      "aliases": [
+
+      ],
+      "description": "Run metadata, YAML, Puppet, Ruby, or Tasks validation.\n\n[validators] is an optional comma-separated list of validators to use. If not specified, all validators are used. Note that when using PowerShell, the list of validators must be enclosed in single quotes.\n\n[targets] is an optional space-separated list of files or directories to be validated. If not specified, validators are run against all applicable files in the module.",
+      "hidden": null,
+      "summary": "Run static analysis tests.",
+      "usage": "Run static analysis tests.",
+      "options": [
+        {
+          "short": null,
+          "long": "puppet-version",
+          "desc": "Puppet version to run tests or validations against.",
+          "argument": "required",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "pe-version",
+          "desc": "Puppet Enterprise version to run tests or validations against.",
+          "argument": "required",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "puppet-dev",
+          "desc": "When specified, PDK will validate or test against the current Puppet source from github.com. To use this option, you must have network access to https://github.com.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "list",
+          "desc": "List all available validators.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": "a",
+          "long": "auto-correct",
+          "desc": "Automatically correct problems where possible.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        },
+        {
+          "short": null,
+          "long": "parallel",
+          "desc": "Run validations in parallel.",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        }
+      ],
+      "subcommands": [
+
+      ]
+    },
+    {
+      "name": "module",
+      "aliases": [
+
+      ],
+      "description": "This command is only for reminding you how to accomplish tasks with the PDK, when you were previously doing them with the puppet module command.",
+      "hidden": null,
+      "summary": "Provide CLI-backwards compatibility to the puppet module tool.",
+      "usage": "Provide CLI-backwards compatibility to the puppet module tool.",
+      "options": [
+
+      ],
+      "subcommands": [
+        {
+          "name": "help",
+          "aliases": [
+
+          ],
+          "description": "Show help for the given command, or show general help. When no command is\ngiven, a list of available commands is displayed, as well as a list of global\ncommand-line options. When a command is given, a command description, as well\nas command-specific command-line options, are shown.\n",
+          "hidden": null,
+          "summary": "show help",
+          "usage": "show help",
+          "options": [
+            {
+              "short": "v",
+              "long": "verbose",
+              "desc": "show more detailed help",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            }
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "build",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "This command is now 'pdk build'.",
+          "usage": "This command is now 'pdk build'.",
+          "options": [
+
+          ],
+          "subcommands": [
+
+          ]
+        },
+        {
+          "name": "generate",
+          "aliases": [
+
+          ],
+          "description": null,
+          "hidden": null,
+          "summary": "This command is now 'pdk new module'.",
+          "usage": "This command is now 'pdk new module'.",
+          "options": [
+            {
+              "short": null,
+              "long": "template-url",
+              "desc": "Specifies the URL to the template to use when creating new modules or classes. (default: https://github.com/puppetlabs/pdk-templates)",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "template-ref",
+              "desc": "Specifies the template git branch or tag to use when creating new modules or classes.",
+              "argument": "required",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            },
+            {
+              "short": null,
+              "long": "skip-interview",
+              "desc": "When specified, skips interactive querying of metadata.",
+              "argument": "forbidden",
+              "multiple": false,
+              "hidden": false,
+              "default": null
+            }
+          ],
+          "subcommands": [
+
+          ]
+        }
+      ]
+    },
+    {
+      "name": "help",
+      "aliases": [
+
+      ],
+      "description": "Show help for the given command, or show general help. When no command is\ngiven, a list of available commands is displayed, as well as a list of global\ncommand-line options. When a command is given, a command description, as well\nas command-specific command-line options, are shown.\n",
+      "hidden": null,
+      "summary": "show help",
+      "usage": "show help",
+      "options": [
+        {
+          "short": "v",
+          "long": "verbose",
+          "desc": "show more detailed help",
+          "argument": "forbidden",
+          "multiple": false,
+          "hidden": false,
+          "default": null
+        }
+      ],
+      "subcommands": [
+
+      ]
+    }
+  ]
+}
