@@ -368,3 +368,227 @@ Export-ModuleMember -Function Validate-PDKModule
 
 
 
+
+# --------------------------
+# These are manually created
+# --------------------------
+
+$invokePDKSource = @"
+using System;
+using System.Diagnostics;
+using System.Management.Automation;
+
+namespace Puppet
+{
+  public class PDKInvoker
+  {
+    private System.Management.Automation.Host.PSHostUserInterface _psUI;
+
+    public PDKInvoker(System.Management.Automation.Host.PSHostUserInterface psUI)
+    {
+      _psUI = psUI;
+    }
+
+    public void InvokePDK(string rubyPath, string[] pdkArguments, string workingDir)
+    {
+      Process process = new Process();
+      process.StartInfo.FileName = rubyPath;
+      process.StartInfo.Arguments = String.Join(" ", pdkArguments);
+      process.StartInfo.CreateNoWindow = false;
+      process.StartInfo.UseShellExecute = false;
+
+      process.StartInfo.RedirectStandardOutput = true;
+      process.StartInfo.RedirectStandardError = true;
+      process.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
+      process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
+
+      process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+      process.ErrorDataReceived += new DataReceivedEventHandler(ErrorOutputHandler);
+
+      _psUI.WriteVerboseLine(String.Format("Using PDK comamand line {0}", String.Join(" ", pdkArguments)));
+
+      process.Start();
+      process.BeginOutputReadLine();
+      process.BeginErrorReadLine();
+      process.WaitForExit();
+      process.CancelOutputRead();
+      process.CancelErrorRead();
+    }
+
+    private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+    {
+      if (outLine == null) { return; }
+      if (outLine.Data == null) { return; }
+      string line = outLine.Data;
+      if (line.Trim() == "") { return; }
+      _psUI.WriteVerboseLine(line);
+    }
+
+    private void ErrorOutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+    {
+      if (outLine == null) { return; }
+      if (outLine.Data == null) { return; }
+      string line = outLine.Data;
+      if (line.Trim() == "") { return; }
+
+      if (line.StartsWith("pdk (INFO): "))
+      {
+        _psUI.WriteVerboseLine(line.Substring(12));
+      }
+      else if (line.StartsWith("pdk (WARN): "))
+      {
+        _psUI.WriteWarningLine(line.Substring(12));
+      }
+      else
+      {
+        _psUI.WriteVerboseLine(line);
+      }
+    }
+  }
+}
+"@
+
+Add-Type -TypeDefinition $invokePDKSource -Language CSharp
+
+function Invoke-PDK2($PDKArgs) {
+  if ($DebugPreference -ne 'SilentlyContinue') { $PDKArgs += @('--debug') }
+  $processArgs = @('-S', '--', "$env:RUBY_DIR\bin\pdk") + $PDKArgs
+
+  $junitXMLFile = New-TemporaryFile
+  $processArgs += "--format=junit:${junitXMLFile}"
+
+  $Invoker = New-Object 'Puppet.PDKInvoker' -ArgumentList @($Host.UI)
+
+  $Invoker.InvokePDK("$env:RUBY_DIR\bin\ruby", $processArgs, (get-location).Path)
+
+  Write-Output $junitXMLFile
+}
+
+Function ConvertFrom-JUnitXML($JUnitFile, $StartTimeStamp) {
+  # Ref - https://llg.cubic.org/docs/junit/
+  # TODO Should error trap here
+  $xmlDoc = [XML](Get-Content -Path $JUnitFile -Raw)
+
+  # Should really use a Class here but for now creating a PSCustomObject
+  $resultHash = @{
+    'PassedCount' = 0
+    'ErrorCount' = 0
+    'FailedCount' = 0
+    'SkippedCount' = 0
+    'TotalCount' = 0
+    'Duration' = (New-TimeSpan -Start $StartTimeStamp -End (Get-Date))
+    'StartTime' = $StartTimeStamp
+    'Tests' = [System.Collections.ArrayList]::new()
+  }
+
+  $xmlDoc.SelectNodes("//testcase") | ForEach-Object {
+    $testCase = $_
+
+    $classArray = $testcase.classname.Split(".",2)
+    $nameArray = $testcase.name.Split(":",3)
+
+    # Should really use a Class here but for now creating a PSCustomObject
+    $testHash = @{
+      'Source' = $classArray[0]
+      'Name' = $classArray[1]
+      'File' = $nameArray[0]
+      'Line' = [int]$nameArray[1]
+      'Result' = 'Success'
+      'Message' = $null
+      'Detail' = $null
+    }
+    $resultHash['TotalCount']++
+
+    $node = $testCase.SelectSingleNode("failure")
+    if ($null -ne $node) {
+      $testHash['Result'] = 'Failure'
+      $testHash['Message'] = $node.message
+      $testHash['Detail'] = $node.'#text'
+      $resultHash['FailedCount']++
+    }
+
+    $node = $testCase.SelectSingleNode("skipped")
+    if ($null -ne $node) {
+      $testHash['Result'] = 'Skipped'
+      $testHash['Message'] = $node.message
+      $testHash['Detail'] = $node.'#text'
+      $resultHash['SkippedCount']++
+    }
+
+    $resultHash['Tests'].Add((New-Object -Type psobject -Property $testHash)) | Out-Null
+  }
+
+  # Post Processing
+  $resultHash['PassedCount'] = $resultHash['TotalCount'] - $resultHash['ErrorCount'] - $resultHash['FailedCount'] - $resultHash['SkippedCount']
+
+  Write-Output (New-Object -Type psobject -Property $resultHash)
+}
+
+<#
+.DESCRIPTION
+Run unit tests.
+
+.PARAMETER PeVersion
+Puppet Enterprise version to run tests or validations against.
+
+.PARAMETER CleanFixtures
+Clean up downloaded fixtures after the test run.
+
+.PARAMETER PuppetDev
+When specified, PDK will validate or test against the current Puppet source from github.com. To use this option, you must have network access to https://github.com.
+
+.PARAMETER PuppetVersion
+Puppet version to run tests or validations against.
+
+.PARAMETER Parallel
+Run unit tests in parallel.
+
+.PARAMETER Raw
+Output the Raw JUnitXML instead of interpretting the results
+#>
+Function Test-PDKUnit2
+{
+  [CmdletBinding()]
+  param(
+    [String] $PeVersion,
+
+    [Switch] $CleanFixtures,
+
+    [Switch] $PuppetDev,
+
+    [String] $PuppetVersion,
+
+    [Switch] $Parallel,
+
+    [Switch] $Raw
+  )
+
+  Process {
+    $args = @('test', 'unit')
+    if (![string]::IsNullOrEmpty($PeVersion)) { $args += @('--pe-version', $PeVersion )}
+    if ($CleanFixtures) { $args += @('--clean-fixtures') }
+    if ($VerbosePreference -eq 'Continue') { $args += '--verbose' }
+    if ($PuppetDev) { $args += @('--puppet-dev') }
+    if (![string]::IsNullOrEmpty($PuppetVersion)) { $args += @('--puppet-version', $PuppetVersion )}
+    if ($Parallel) { $args += @('--parallel') }
+
+    $StartTimeStamp = (Get-Date)
+    $JUnitFile = Invoke-PDK2 -PDKArgs $args
+
+    If (Test-Path -Path $JUnitFile) {
+      if ($Raw) {
+        Get-Content -Path $JUnitFile -Raw
+      } else {
+        ConvertFrom-JUnitXML -JUnitFile $JUnitFile -StartTimeStamp $StartTimeStamp
+      }
+    } else {
+      Throw "PDK did not generate a JUnit XML file at ${JUnitFile}"
+    }
+  }
+
+  End {
+    If (Test-Path -Path $JUnitFile) { Remove-Item -Path $JUnitFile -Force -Confirm:$false | Out-Null }
+  }
+}
+Export-ModuleMember -Function Test-PDKUnit2
+

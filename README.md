@@ -1,5 +1,25 @@
 # Puppet PDK MODULE
 
+Uses the [EPS PowerShell module](https://www.powershellgallery.com/packages/EPS)
+
+`generate_module.ps1` : Generates the module PSM1 and PSD1 files from the JSON UI schema
+
+`loopbuild.ps1` : Useful when I was developing the script. It continually builds the module fromthe schema
+
+`pwsh_module_template_psd1` : The template file to create the PSD1 file
+
+`pwsh_template_ps1` : The template file to create the PSM1 file
+
+Best to use PowerShell Core (6), but it'll probably work on Windows PowerShell
+
+## To generate the module from the JSON UI data
+
+``` powershell
+PS> .\generate_module.ps1
+```
+
+## Example output
+
 ** EXPERIMENTAL - Git History will be REWRITTEN **
 
 ``` powershell
@@ -121,3 +141,37 @@ pdk (INFO): Using Puppet 6.0.2
 info: task-name: ./: Target does not contain any files to validate (tasks/**/*).
 info: task-metadata-lint: ./: Target does not contain any files to validate (tasks/*.json).
 ```
+
+### Looking at more in depth integration with PDK when using Test-PDKUnit2
+
+Running unit tests on the puppetlabs-registry module where I injected some failures on purpose
+
+``` text
+PS> Test-PDKUnit2 -Verbose
+
+VERBOSE: Using PDK comamand line -S -- C:\PROGRA~1\PUPPET~1\DEVELO~1\private\ruby\2.4.4\bin\pdk test unit --format=junit:C:\Users\glenn.sarti\AppData\Local\Temp\tmp14D0.tmp
+WARNING: This module is compatible with an older version of PDK. Run `pdk update` to update it to your version of PDK.
+VERBOSE: Using Ruby 2.5.1
+VERBOSE: Using Puppet 6.0.2
+VERBOSE:   Evaluated 173 tests in 44.660815 seconds: 6 failures, 8 pending.
+
+SkippedCount : 8
+StartTime    : 12/04/2019 11:24:44
+TotalCount   : 173
+PassedCount  : 159
+Duration     : 00:01:00.0356678
+ErrorCount   : 0
+FailedCount  : 6
+Tests        : {@{Detail=; Message=; Line=21; File=./spec/classes/mixed_default_settings_spec.rb; Result=Success;
+               Name=mixed_default_settings should compile into a catalogue without dependency cycles;
+               Source=rspec}, @{Detail=; Message=; Line=23; File=./spec/classes/mixed_default_settings_spec.rb;
+               Result=Success; Name=mixed_default_settings should contain Registry_value[hklm\Software\foo\];
+               Source=rspec}, @{Detail=; Message=; Line=24; File=./spec/classes/mixed_default_settings_spec.rb;
+               Result=Success; Name=mixed_default_settings should contain Registry_value[hklm\Software\foo];
+               Source=rspec}, @{Detail=; Message=; Line=16; File=./spec/defines/value_spec.rb; Result=Success;
+               Name=registry::value Given a minimal resource should compile into a catalogue without dependency
+               cycles; Source=rspec}...}
+
+```
+
+Now have a more strict object output onto the pipeline.  The `.Tests` attribute is an array of all of the tests in a structured format
